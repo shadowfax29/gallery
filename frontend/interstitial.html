@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TapMind 1x1 Tracking Tag</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        /* 1x1 invisible tracking container */
+        #tmsrv-9411 {
+            width: 1px;
+            height: 1px;
+            min-height: 1px;
+            overflow: hidden;
+            visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TapMind 1x1 Tracking Tag -->
+    <!-- BEGIN :: TPMS-Gallery-test-Interstatial-300x600-->
+    <div id='tmsrv-9411'>
+        <script src='https://srv-qa.tmadsrv.com/9411.js'></script>
+        <script async src='https://dsrv.tmadsrv.com/tmCore.js'></script>
+        <script>
+            window.tmsrv = window.tmsrv || { cmd: [] };
+            window.tmsrv.cmd.push(function (adObj) {
+                adObj.AdSlot('tmsrv-9411');
+                adObj.Meta('/tmsrvptr1115/tmsrvplr2657/tmsrvadu9411/TPMS-Gallery-test-Interstatial-300x600');
+                adObj.CacheBuster(Date.now()); // Dynamic cache buster instead of %%CACHEBUSTER%%
+                adObj.UserConsent('0');
+                adObj.Domain('test06/11.com');
+                adObj.ClickUrl(''); // Empty instead of %%CLICK_URL_UNESC%%
+                adObj.ViewURL(''); // Empty instead of %%VIEW_URL_UNESC%%
+                adObj.Execute();
+            });
+        </script>
+    </div>
+    <!-- END :: TPMS-Gallery-test-Interstatial-300x600-->
+
+    <!-- AMP Integration Script - Modified for 1x1 pixel -->
+    <script>
+        (function () {
+            'use strict';
+
+            var isAMP = false;
+
+            // Detect if running in AMP context
+            try {
+                isAMP = window.context && window.context.location;
+            } catch (e) {
+                // Check via parent messages
+                isAMP = window !== window.top;
+            }
+
+            if (!isAMP) return;
+
+            // For 1x1 pixel, always report 1x1 size
+            function notifySize() {
+                window.parent.postMessage({
+                    sentinel: 'amp',
+                    type: 'embed-size',
+                    height: 1,
+                    width: 1
+                }, '*');
+            }
+
+            // Initial size notification
+            function init() {
+                setTimeout(notifySize, 100);
+            }
+
+            // Listen for messages from parent
+            window.addEventListener('message', function (e) {
+                if (e.data === 'amp-request-size' || e.data === 'embed-size') {
+                    notifySize();
+                }
+            });
+
+            // Initialize
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // Also notify on load
+            window.addEventListener('load', notifySize);
+
+        })();
+    </script>
+
+</body>
+
+</html>

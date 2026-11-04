@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interstitial Ad Design</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..800&display=swap">
+<style>
+  :root { --orange: #ff7e01; --navy: #1f2f86; --cream: #f4e9dc; --ink: #0b0b0b; --mute: #666661; --line: #e4e0da; }
+  * { box-sizing: border-box; }
+  html, body { background: transparent; margin: 0; font-family: 'Geist', system-ui, sans-serif; color: var(--ink); }
+  body { box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; min-height: 100vh; padding: 12px; }
+  /* ?fill=1: top-aligned and as tall as the window allows */
+  body.wide { justify-content: flex-start; }
+  /* the iframe is as tall as the window allows, so cap the mockup to what fits above the captions and spec strip */
+  body.wide { padding: 12px 0; }
+  body.wide .wrap { max-width: none; margin: 0; width: 100%; --H: max(300px, min(calc((100cqw - 270px) * .4258 + 20px), calc(100vh - 62px))); }
+  @media (min-width: 900px) {
+    body.wide .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 240px; column-gap: 28px; align-items: start; }
+    body.wide .specs { grid-template-columns: 1fr; margin-top: 0; }
+    body.wide .specs div { border-left: 0; border-top: 1px solid var(--line); }
+    body.wide .specs div:first-child { border-top: 0; }
+  }
+  body.fill { justify-content: flex-start; }
+  body.fill .wrap { --H: clamp(380px, calc(100vh - 210px), 640px); max-width: 1100px; margin: 0 auto 0 0; }
+  .wrap { --H: calc(42.58cqw + 20px); container-type: inline-size; margin: 0 auto; max-width: 960px; width: 100%; }
+  .stage { align-items: flex-start; display: flex; gap: 3cqw; justify-content: space-between; }
+  .col { display: grid; gap: 12px; justify-items: center; min-width: 0; }
+  .col small { color: var(--mute); font-size: 11px; }
+  .col--desktop { flex: 1 1 auto; min-width: 0; }
+  .col--mobile { flex: 0 0 auto; }
+
+  /* Desktop browser */
+  .browser { height: var(--H); background: #fff; border-radius: 10px; box-shadow: 0 6px 22px rgba(0,0,0,.14); overflow: hidden; width: 100%; }
+  .bar { align-items: center; background: #f5f4f1; display: flex; gap: 6px; height: 26px; padding: 0 10px; }
+  .bar i { background: #d9d7d2; border-radius: 50%; height: 7px; width: 7px; }
+  .bar span { background: #fff; border-radius: 6px; flex: 1; height: 12px; margin-left: 8px; }
+  .viewport { background: #fff; height: calc(100% - 26px); position: relative; }
+  .page { animation: pscroll 6s infinite; align-content: start; background: #fff; display: grid; gap: 2.4%; inset: 0; padding: 4% 4.5%; position: absolute; }
+  .bar-h { background: #1a1a18; border-radius: 1px; height: 10px; width: 62%; }
+  .bar-s { background: #d9d8d4; height: 6px; width: 28%; }
+  .ln { background: #e4e3df; border-radius: 1px; height: 5px; width: 100%; }
+  .blk { background: #ecebe7; border-radius: 2px; height: 18%; }
+  .app { gap: 3%; }
+  .pc { background: #fff; border: 1px solid #e4e3df; border-radius: 4px; display: grid; gap: 5px; padding: 6%; }
+  .pm { background: #ecebe7; height: 28px; }
+  .pb { background: #1a1a18; height: 5px; width: 40%; }
+  .cont { background: #1a1a18; border-radius: 2px; height: 22px; margin-top: 2%; }
+  .dim { animation: dim 6s infinite; background: #111; inset: 0; opacity: 0; position: absolute; }
+  @keyframes dim { 0%, 20% { opacity: 0; } 27%, 94% { opacity: .5; } 100% { opacity: 0; } }
+
+  .ad-d { animation: pop 6s infinite; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.35); display: grid; grid-template-columns: 45% 55%; left: 50%; overflow: hidden; position: absolute; top: 50%; transform: translate(-50%, -50%); width: 56%; aspect-ratio: 2.05; }
+  .ad-d .l { align-items: center; background: #f1efeb; display: grid; justify-items: center; }
+  .media { background: #dedcd7; height: 62%; width: 70%; }
+  .ad-d .r, .ad-m { background: linear-gradient(135deg, #ff7e01, #ff9a2e); }
+  .ad-d .r { align-content: center; display: grid; gap: 7%; padding: 0 9%; }
+  .brand { background: rgba(255,255,255,.92); height: 7px; width: 22%; }
+  .wl { background: rgba(255,255,255,.55); border-radius: 1px; height: 5px; }
+  .ad-d h3 { font-size: clamp(11px, 1.9vw, 24px); letter-spacing: -.02em; line-height: 1.08; margin: 0; }
+  .ad-d p { font-size: clamp(5px, .7vw, 9px); margin: 0; opacity: .95; }
+  .btn { background: #fff; border-radius: 3px; display: grid; height: 16px; justify-self: start; margin-top: 4%; place-items: center; width: 42%; }
+  .btn i { background: #ff7e01; height: 4px; opacity: .8; width: 55%; }
+  .tag { background: #fff; border-radius: 2px; color: #333; font-size: clamp(4px, .55vw, 7px); font-weight: 700; left: 2.5%; padding: 2px 4px; position: absolute; top: 4%; z-index: 2; }
+  .x { align-items: center; background: #1b1b1b; border-radius: 50%; color: #fff; display: grid; font-size: clamp(6px, .8vw, 11px); height: 4.2%; justify-items: center; min-height: 12px; min-width: 12px; position: absolute; right: 2.5%; top: 5%; width: 3%; z-index: 2; line-height: 1; }
+  .x::before { content: '\00d7'; }
+  .prog { background: rgba(255,255,255,.55); bottom: 0; height: 3px; left: 0; position: absolute; width: 100%; z-index: 2; }
+  .prog b { animation: fill 6s infinite; background: #fff; display: block; height: 100%; transform-origin: left; width: 100%; }
+  @keyframes fill { 0%, 34% { transform: scaleX(0); } 90%, 100% { transform: scaleX(1); } }
+  @keyframes pscroll { 0%, 3% { transform: translateY(0); } 20%, 94% { transform: translateY(-34%); } 100% { transform: translateY(0); } }
+  @keyframes pop { 0%, 27% { opacity: 0; transform: translate(-50%, -50%) scale(.94); } 34%, 92% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+
+  /* Phone */
+  .phone { background: #101012; border-radius: 26px; box-shadow: 0 8px 22px rgba(0,0,0,.25); padding: 6px; position: relative; width: calc(var(--H) / 2); height: var(--H); flex: none; }
+  .phone::before { background: #101012; border-radius: 0 0 10px 10px; content: ''; height: 12px; left: 32%; position: absolute; top: 6px; width: 36%; z-index: 6; }
+  .screen { background: #fff; border-radius: 20px; height: 100%; overflow: hidden; position: relative; }
+  .screen .page { padding-top: 22px; }
+  .ad-m { animation: popm 6s infinite; aspect-ratio: .8; background: #fff; border-radius: 8px; box-shadow: 0 8px 22px rgba(0,0,0,.4); display: grid; grid-template-rows: 1fr 1fr; left: 10%; overflow: hidden; position: absolute; right: 10%; top: 50%; transform: translateY(-50%); }
+  .ad-m .m { align-items: center; background: #f1efeb; display: grid; justify-items: center; }
+  .ad-m .m .media { height: 70%; width: 62%; }
+  .ad-m .t { align-content: center; background: linear-gradient(135deg, #ff7e01, #ff9a2e); display: grid; gap: 9%; justify-items: start; padding: 0 10%; }
+  .ad-m .btn { margin-top: 3%; width: 52%; }
+  @keyframes popm { 0%, 27% { opacity: 0; transform: translateY(-50%) scale(.94); } 34%, 92% { opacity: 1; transform: translateY(-50%) scale(1); } 100% { opacity: 0; transform: translateY(-50%) scale(1); } }
+
+  /* Narrow screens: stack the laptop above the phone */
+  @container (max-width: 480px) {
+    .stage { align-items: center; flex-direction: column; gap: 20px; }
+    .col--desktop { flex: none; width: 100%; }
+    .browser { height: calc(100cqw * .5625 + 26px); }
+    .phone { height: 300px; width: 150px; }
+    .solo .phone { height: min(340px, 90cqw * 1.9); width: calc(min(340px, 90cqw * 1.9) / 2); }
+  }
+
+  /* Skeleton of the TapMind MAG demo page: orange top line, banner with an ad slot, dark nav with coloured tabs */
+  .sk-bleed { margin: -4% -4.5% 6px; }
+  .cols > .sk-bleed { grid-column: 1 / -1; }
+  .screen .sk-bleed { margin: 0 -4.5% 6px; }
+  .sk-top { align-items: center; background: #ff7e01; display: flex; gap: 7px; height: 14px; padding: 0 4.5%; }
+  .sk-top i { background: rgba(255,255,255,.85); height: 3px; width: 24px; }
+  .sk-top b { background: rgba(255,255,255,.7); height: 5px; margin-left: 0; width: 5px; }
+  .sk-top b:first-of-type { margin-left: auto; }
+  .sk-banner { align-items: center; background: #ffa94d; display: flex; gap: 14px; height: 42px; padding: 0 4.5%; }
+  .sk-logo { background: #fff; height: 11px; width: 74px; }
+  .sk-adslot { background: rgba(255,255,255,.38); height: 70%; margin-left: auto; width: 58%; }
+  .sk-nav { align-items: stretch; background: #232323; display: flex; gap: 2px; height: 26px; padding: 0 4.5%; }
+  .sk-nav span { background: #343434; border-top: 3px solid var(--c, #ff7e01); width: 34px; }
+  .sk-nav span.on { background: #444; }
+  .sk-nav em { align-self: center; background: #343434; height: 14px; margin-left: auto; width: 70px; }
+  .screen .sk-banner { height: 32px; }
+  .screen .sk-adslot { display: none; }
+  .screen .sk-nav { height: 22px; }
+  .screen .sk-nav span.ham { border-top-color: #ff7e01; width: 22px; }
+
+  /* Spec strip */
+  .specs { background: #fff; border: 1px solid var(--line); display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; margin-top: 22px; }
+  .specs div { border-left: 1px solid var(--line); padding: 10px 14px; }
+  .specs div:first-child { border-left: 0; }
+  .specs dt { color: #8a8780; font-size: 9px; font-weight: 700; letter-spacing: .08em; margin-bottom: 4px; text-transform: uppercase; }
+  .specs dd { font-size: 11px; font-weight: 600; margin: 0; }
+  @media (max-width: 640px) { .specs { grid-template-columns: 1fr 1fr; } .stage { gap: 2%; } }
+  @media (prefers-reduced-motion: reduce) { .dim { animation: none; opacity: .5; } .ad-d, .ad-m, .prog b { animation: none; } .ad-d { transform: translate(-50%, -50%); } .ad-m { transform: translateY(-50%); } .prog b { transform: scaleX(.6); } .page { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="stage">
+  <div class="col col--desktop">
+    <div class="browser" role="img" aria-label="Interstitial ad over a desktop web page">
+      <div class="bar"><i></i><i></i><i></i><span></span></div>
+      <div class="viewport">
+        <div class="page doc">
+          <div class="sk-bleed"><div class="sk-top"><i></i><i></i><i></i><i></i><b></b><b></b><b></b><b></b></div><div class="sk-banner"><span class="sk-logo"></span><span class="sk-adslot"></span></div><div class="sk-nav"><span class="on"></span><span style="--c:#436feb"></span><span style="--c:#f44336"></span><span style="--c:#ff7e00"></span><span style="--c:#7eb943"></span><span style="--c:#aa35d6"></span><em></em></div></div>
+          <span class="bar-h"></span><span class="bar-h" style="width:48%"></span><span class="bar-s"></span>
+          <span class="ln"></span><span class="ln" style="width:82%"></span>
+          <span class="blk"></span>
+          <span class="ln"></span><span class="ln" style="width:70%"></span>
+          <span class="blk" style="height:12%"></span>
+          <span class="ln"></span><span class="ln" style="width:60%"></span>
+          <span class="blk"></span>
+          <span class="ln"></span><span class="ln" style="width:76%"></span><span class="ln" style="width:88%"></span>
+          <span class="blk" style="height:14%"></span>
+          <span class="ln"></span><span class="ln" style="width:64%"></span>
+        </div>
+        <div class="dim"></div>
+        <div class="ad-d">
+          <span class="tag">AD</span><span class="x"></span>
+          <div class="l"><span class="media"></span></div>
+          <div class="r"><span class="brand"></span><span class="wl" style="width:70%"></span><span class="wl" style="width:48%"></span><span class="btn"><i></i></span></div>
+          <div class="prog"><b></b></div>
+        </div>
+      </div>
+    </div>
+    <small>Desktop · 1280 × 720</small>
+  </div>
+  <div class="col col--mobile">
+    <div class="phone" role="img" aria-label="Interstitial ad on a mobile screen">
+      <div class="screen">
+        <div class="page app">
+          <div class="sk-bleed"><div class="sk-top"><i></i><i></i></div><div class="sk-banner"><span class="sk-logo"></span></div><div class="sk-nav"><span class="ham"></span></div></div>
+          <span class="bar-h" style="width:55%"></span>
+          <div class="pc"><span class="pm"></span><span class="ln"></span><span class="pb"></span></div>
+          <div class="pc"><span class="pm"></span><span class="ln"></span><span class="pb"></span></div>
+          <span class="ln"></span><span class="ln" style="width:70%"></span>
+          <span class="cont"></span>
+          <span class="ln"></span><span class="ln" style="width:80%"></span>
+          <div class="pc"><span class="pm"></span><span class="ln"></span><span class="pb"></span></div>
+          <div class="pc"><span class="pm"></span><span class="ln"></span><span class="pb"></span></div>
+          <span class="ln"></span><span class="ln" style="width:66%"></span>
+        </div>
+        <div class="dim"></div>
+        <div class="ad-m">
+          <span class="tag">AD</span><span class="x"></span>
+          <div class="m"><span class="media"></span></div>
+          <div class="t"><span class="brand"></span><span class="wl" style="width:70%"></span><span class="wl" style="width:48%"></span><span class="btn"><i></i></span></div>
+          <div class="prog"><b></b></div>
+        </div>
+      </div>
+    </div>
+    <small>Mobile · 360 × 640</small>
+  </div>
+</div>
+<dl class="specs">
+  <div><dt>Sizes</dt><dd>320×480 · 768×1024 · 1280×720</dd></div>
+  <div><dt>Auto-close</dt><dd>Customisable</dd></div>
+  <div><dt>Max file size</dt><dd>[KB]</dd></div>
+  <div><dt>Platforms</dt><dd>Web · Mobile web</dd></div>
+</dl>
+</div>
+<script>
+  if (location.search.indexOf('fill=1') !== -1) document.body.classList.add('fill');
+  if (location.search.indexOf('wide=1') !== -1) document.body.classList.add('wide');
+
+  /* Tell the page that embeds us how tall our content is, so it can size the frame without a gap */
+  (function () {
+    var wrapEl = document.getElementById('wrap');
+    function post() {
+      if (!wrapEl || window.parent === window) return;
+      var r = wrapEl.getBoundingClientRect();
+      window.parent.postMessage({ type: 'tm-height', h: Math.ceil(r.bottom + window.scrollY + 12) }, '*');
+    }
+    window.addEventListener('load', post);
+    window.addEventListener('resize', post);
+    if (window.ResizeObserver && wrapEl) new ResizeObserver(post).observe(wrapEl);
+    setTimeout(post, 300);
+  })();
+</script>
+</body>
+</html>

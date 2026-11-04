@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interstitial Ad Mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..800&display=swap">
+<link rel="stylesheet" href="./tm-assets/tm-kit.css">
+<style>
+  body { background: #fff; color: #0b0b0b; font-family: 'Geist', system-ui, sans-serif; margin: 0; }
+  main { margin: 0 auto; max-width: 1200px; padding: 56px 24px 72px; }
+  h1 { font-size: clamp(28px, 3vw, 40px); letter-spacing: -.03em; margin: 0 0 8px; }
+  p { color: #666661; font-size: 17px; line-height: 1.55; margin: 0 0 32px; max-width: 60ch; }
+  .row { align-items: start; display: grid; gap: 40px 32px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  h2 { font-size: 15px; letter-spacing: .04em; margin: 0 0 12px; text-transform: uppercase; color: #fe5f00; }
+  @media (max-width: 760px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Interstitial Ads</h1>
+  <p>A full-screen ad appears at a natural pause, takes the whole viewport, and closes with one tap. Shown on web and on mobile.</p>
+  <div class="row">
+    <section><h2>Web</h2><div id="web"></div></section>
+    <section><h2>Mobile</h2><div id="app"></div></section>
+  </div>
+</main>
+<script src="./tm-assets/tm-kit.js"></script>
+<script>
+  var ARTICLE = ['head', 'byline', ['lines', { n: 2 }], 'media', ['lines', { n: 4 }], ['media', { h: '44u' }], ['lines', { n: 4 }]];
+  TapMindKit.build(document.getElementById('web'), {
+    frame: 'web', label: 'Full-screen interstitial ad over an article page',
+    content: ARTICLE,
+    page: { dim: { to: .45, at: 500, dur: 300 } },
+    layers: [{ creative: 'standard', place: 'full', at: 800, dur: 520, enter: 'fade-scale', closable: true, closeLabel: 'Close ad' }],
+    controls: { caption: 'Interstitial Ads (web)', note: 'Tap the close button to dismiss', replay: true }
+  });
+  TapMindKit.build(document.getElementById('app'), {
+    frame: 'app', label: 'Full-screen interstitial ad between app screens',
+    content: [['products', { n: 2 }], ['lines', { n: 2 }], ['button', { label: 'Continue' }]],
+    page: { dim: { to: .45, at: 500, dur: 300 } },
+    layers: [{ creative: 'standard', place: 'full', at: 800, dur: 520, enter: 'fade-scale', closable: true, closeLabel: 'Close ad' }],
+    controls: { caption: 'Interstitial Ads (mobile)', note: 'Tap the close button to dismiss', replay: true }
+  });
+</script>
+</body>
+</html>

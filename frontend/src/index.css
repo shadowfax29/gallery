@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.bg-white-custom {
+    @apply backdrop-blur-sm shadow-xl border-b border-gray-700/50 sticky top-0 z-30;
+    background: white;
+}
+
+header {
+    background: white;
+}
+
+.bg-gray-900\/95 {
+    background-color: rgb(188 203 231);
+}
+
+.bg-gray-800\/50 {
+    background-color: rgb(178 210 255 / 50%);
+}
+
+.bg-gray-900\/80 {
+    background-color: rgb(209 219 238);
+}
+
+.p-6 {
+    background: white;
+}
+
+.text-gray-300 {
+    --tw-text-opacity: 1;
+    color: rgb(0 0 0);
+}
+
+.text-gray-400 {
+    --tw-text-opacity: 1;
+    color: rgb(0 0 0);
+}
+
+.to-slate-900 {
+    --tw-gradient-to: #8fa5d4 var(--tw-gradient-to-position);
+}
+
+.bg-gray-900\/95 {
+    background-color: rgb(188 203 231);
+}
+
+.py-4 {
+    background: #ffffff;
+}
+
+.w-4 {
+    color: #000000;
+}
+
+.font-medium {
+    color: #000000;
+}
+
+.text-white {
+    color: #000000;
+}
+
+.to-slate-900 {
+    --tw-gradient-to: #b6ceff var(--tw-gradient-to-position);
+}
+
+.bg-gray-700 {
+    background-color: rgb(189 208 239);
+}
+
+.bg-gray-700\/50 {
+    background-color: rgb(158 184 226 / 50%);
+}
+
+.bg-gray-800 {
+    background-color: rgb(155 186 229);
+}
+
+.hover\:shadow-lg:hover {
+    color: #000000;
+}
+
+.text-blue-400 {
+    color: rgb(4 4 4);
+}
+
+.p-6 {
+    padding: 1rem;
+}
+
+.hover\:to-purple-700:hover {
+    --tw-gradient-to: #2196F3 var(--tw-gradient-to-position);
+}
+
+.hover\:to-purple-700:hover {
+    --tw-gradient-to: #2196F3 var(--tw-gradient-to-position);
+}
+
+.to-teal-500 {
+    --tw-gradient-to: #d1dffa var(--tw-gradient-to-position);
+}
+
+.from-emerald-500 {
+    --tw-gradient-from: #5490f2 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(59 130 246 / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-pink-500 {
+    --tw-gradient-to: #ffffff var(--tw-gradient-to-position);
+}
+
+.from-purple-500 {
+    --tw-gradient-from: #5490f2 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(59 130 246 / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-blue-500 {
+    --tw-gradient-from: #5490f2 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(59 130 246 / 25%) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}

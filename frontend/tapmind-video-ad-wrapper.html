@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TapMind Video Ad - Wrapper for AMP</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #tmsrv-9381 {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TapMind Ad Container -->
+  <!-- BEGIN :: Default - Hybrid Player (Shiva)-->
+  <div id='tmsrv-8872'>
+    <script async src='https://vsrv.tmadsrv.com/tmCore.js'></script>
+    <script>
+      window.tmsrv = window.tmsrv || { cmd: [] };
+      window.tmsrv.cmd.push(function (adObj) {
+        adObj.AdSlot('tmsrv-8872');
+        adObj.Meta('/tmsrvptr507/tmsrvplr2216/tmsrvadu8872/Default - Hybrid Player (Shiva)');
+        adObj.CacheBuster('%%CACHEBUSTER%%');
+        adObj.UserConsent('0');
+        adObj.Domain('test12.com');
+        adObj.ClickUrl('%%CLICK_URL_UNESC%%');
+        adObj.ViewURL('%%VIEW_URL_UNESC%%');
+        adObj.Execute();
+      });
+    </script>
+  </div>
+  <!-- END :: Default - Hybrid Player (Shiva)-->
+
+  <!-- AMP Integration Script -->
+  <script>
+    (function () {
+      'use strict';
+
+      var isAMP = false;
+
+      // Detect if running in AMP context
+      try {
+        isAMP = window.context && window.context.location;
+      } catch (e) {
+        // Check via parent messages
+        isAMP = window !== window.top;
+      }
+
+      if (!isAMP) return;
+
+      // Notify parent of size
+      function notifySize() {
+        var height = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight,
+          360
+        );
+
+        var width = Math.max(
+          document.documentElement.scrollWidth,
+          document.body.scrollWidth,
+          640
+        );
+
+        window.parent.postMessage({
+          sentinel: 'amp',
+          type: 'embed-size',
+          height: height,
+          width: width
+        }, '*');
+      }
+
+      // Initial size notification
+      function init() {
+        setTimeout(notifySize, 100);
+        setTimeout(notifySize, 500);
+        setTimeout(notifySize, 1500);
+      }
+
+      // Listen for messages from parent
+      window.addEventListener('message', function (e) {
+        if (e.data === 'amp-request-size' || e.data === 'embed-size') {
+          notifySize();
+        }
+      });
+
+      // Watch for DOM changes
+      var observer = new MutationObserver(function () {
+        notifySize();
+      });
+
+      if (document.body) {
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true
+        });
+      }
+
+      // Initialize
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+      // Watch for video player load
+      window.addEventListener('load', function () {
+        setTimeout(notifySize, 1000);
+      });
+
+    })();
+  </script>
+
+</body>
+
+</html>

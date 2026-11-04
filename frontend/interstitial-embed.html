@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ad Format Mockup Embed</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..800&display=swap">
+<link rel="stylesheet" href="./tm-assets/tm-kit.css">
+<style>
+  html, body { background: transparent; margin: 0; font-family: 'Geist', system-ui, sans-serif; }
+  body { box-sizing: border-box; padding: 12px; }
+  .tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+  .tabs button { background: #fff; border: 1px solid #deded9; color: #666661; cursor: pointer; font: 600 13px/1 'Geist', sans-serif; min-height: 36px; padding: 0 16px; }
+  .tabs button[aria-pressed="true"] { background: #0b0b0b; border-color: #0b0b0b; color: #fff; }
+  .row { align-items: center; display: flex; gap: 3%; justify-content: center; }
+  #web { flex: 0 0 68%; min-width: 0; }
+  #app { flex: 0 0 22%; min-width: 0; }
+  .app-only #web { display: none; }
+  .app-only #app { flex-basis: 30%; }
+  .tm-controls, .tm-caption { font-size: 12px; }
+  /* Mobile campaign image fills the screen with no text panel */
+  .bleed #app .tm-cr--campaign, .bleed-web #web .tm-cr--campaign { display: block; }
+  .bleed #app .tm-camp-copy, .bleed-web #web .tm-camp-copy { display: none; }
+  .bleed #app .tm-camp-shot, .bleed-web #web .tm-camp-shot { height: 100%; }
+  .bleed #app .tm-camp-shot img { object-fit: cover; }
+  .bleed-web #web .tm-camp-shot img { object-fit: contain; }
+  /* Remnant: article column on the left, empty sidebar slot on the right where the ad fills in */
+  .sidebar #web .tm-doc { padding-right: 38%; }
+  .tm-inread { outline: calc(2px * var(--s)) solid #fe5f00; outline-offset: calc(2px * var(--s)); overflow: hidden; }
+  .tm-inread img { display: block; height: 100%; left: 0; object-fit: contain; position: absolute; top: 0; width: 100%; }
+  .tm-inread .tm-glyph-play { z-index: 2; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
+  .tm-inread .tm-vbar { z-index: 2; }
+  .tm-inread-ad { background: rgba(0,0,0,.55); color: #fff; font: 700 calc(8px * var(--s))/1 'Geist', sans-serif; left: calc(6px * var(--s)); padding: calc(3px * var(--s)) calc(5px * var(--s)); position: absolute; top: calc(6px * var(--s)); z-index: 2; }
+  .tm-layer-in:has(.tm-fv) { background: #14161a; box-shadow: 0 calc(8px * var(--s)) calc(24px * var(--s)) rgba(0,0,0,.35); overflow: hidden; }
+  .tm-fv, .tm-fv img { height: 100%; position: absolute; width: 100%; left: 0; top: 0; }
+  .tm-fv img { object-fit: contain; }
+  .tm-fv .tm-glyph-play, .tm-fv .tm-vbar, .tm-fv .tm-tag { z-index: 2; }
+</style>
+</head>
+<body>
+<div class="tabs">
+  <button type="button" data-mode="wireframe" aria-pressed="true">Wireframe creative</button>
+  <button type="button" data-mode="campaign" aria-pressed="false">Campaign creative</button>
+</div>
+<div class="row" id="row"><div id="web"></div><div id="app"></div></div>
+<script src="./tm-assets/tm-kit.js"></script>
+<script>
+  var C = './tm-assets/campaign/';
+  var ARTICLE = ['head', 'byline', ['lines', { n: 2 }], 'media', ['lines', { n: 4 }], ['media', { h: '44u' }], ['lines', { n: 4 }]];
+  var VIDEO_PAGE = ['head', 'byline', 'player', ['lines', { n: 4 }], ['lines', { n: 4 }], ['lines', { n: 4 }], ['lines', { n: 4 }]];
+  var VIDEO_APP = ['head', 'player', ['lines', { n: 8 }]];
+  var APP = [['products', { n: 2 }], ['lines', { n: 2 }], ['button', { label: 'Continue' }]];
+  var DIM = { dim: { to: .45, at: 900, dur: 700 } };
+  var SCROLL = { scroll: { by: '-14%', at: 1200, dur: 1100 } };
+  var SCROLL_VIDEO = { scroll: { by: '-40%', at: 2000, dur: 900 } };
+  var DEFAULT = { at: 1800, dur: 1000, enter: 'fade-scale', closable: false };
+
+  /* Each format has a web scene and an app scene. A layer is { wire, camp, ...timing }:
+     wire is the wireframe creative, camp is the campaign creative (image file and placement). */
+  var FORMATS = {
+    interstitial: {
+      opts: { closable: true },
+      web: { content: ARTICLE, page: DIM, layers: [{ wire: { creative: 'standard', place: 'full' }, camp: { place: 'center', w: 66, h: 82, img: 'campaign-10x9.jpg' } }] },
+      app: { content: APP, page: DIM, bleed: true, layers: [{ wire: { creative: 'standard', place: 'full' }, camp: { place: 'full', img: 'ad-fullscreen-9x16.jpg' } }] }
+    },
+    slider: {
+      opts: { at: 1000, dur: 700, enter: 'slide-right' },
+      web: { content: ARTICLE, layers: [{ wire: { creative: 'standard', place: 'br' }, camp: { place: 'br', w: 52, h: '90u', img: 'ad-dock-3x1.jpg' } }] },
+      app: { content: APP, layers: [{ wire: { creative: 'standard', place: 'br' }, camp: { place: 'br', w: 92, h: '70u', img: 'ad-dock-3x1.jpg' } }] }
+    },
+    'stay-on': {
+      opts: { at: 1000, dur: 700, enter: 'dock' },
+      web: { content: ARTICLE, page: SCROLL, layers: [{ wire: { creative: 'standard', place: 'bottom' }, camp: { place: 'bottom', img: 'ad-dock-3x1.jpg' } }] },
+      app: { content: APP, page: SCROLL, layers: [{ wire: { creative: 'standard', place: 'bottom' }, camp: { place: 'bottom', img: 'ad-dock-3x1.jpg' } }] }
+    },
+    remnant: {
+      opts: { at: 1400, dur: 700, enter: 'fade' },
+      web: { sidebar: true, bleed: true, content: ARTICLE, layers: [{ wire: { creative: 'standard', place: 'tr', w: 30, h: 37, margin: '16u' }, camp: { place: 'tr', w: 30, h: 37, margin: '16u', img: 'ad-mrec-300x250.jpg' } }] },
+      app: { bleed: true, content: ['head', 'byline', ['lines', { n: 3 }], ['spacer', { h: '70u' }], ['lines', { n: 4 }], 'media'], layers: [{ wire: { creative: 'standard', place: 'center', w: 84, h: 36 }, camp: { place: 'center', w: 84, h: 36, img: 'ad-mrec-300x250.jpg' } }] }
+    },
+    'inread-player': {
+      web: { page: { scroll: { by: '-46%', at: 500, dur: 1500 } },
+             content: function (camp) { return ['head', 'byline', ['lines', { n: 3 }], 'media', ['lines', { n: 4 }], ['lines', { n: 3 }], ['inread', { at: 2000, camp: camp }], ['lines', { n: 4 }], ['lines', { n: 4 }], ['lines', { n: 4 }]]; }, layers: [] },
+      app: { page: { scroll: { by: '-55%', at: 500, dur: 1500 } },
+             content: function (camp) { return ['head', ['lines', { n: 3 }], 'media', ['lines', { n: 5 }], ['lines', { n: 3 }], ['inread', { at: 2000, camp: camp }], ['lines', { n: 5 }], ['lines', { n: 5 }]]; }, layers: [] }
+    },
+    'inread-floating': {
+      opts: { dur: 800, enter: 'detach' },
+      web: { page: { scroll: { by: '-62%', at: 2600, dur: 1100 } },
+             content: function (camp) { return ['head', 'byline', ['lines', { n: 3 }], ['inread', { at: 900, camp: camp }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }]]; },
+             layers: [{ wire: { creative: 'floatvid', place: 'br', w: 42, h: '84u', closable: true }, camp: { creative: 'floatvid', place: 'br', w: 42, h: '84u', img: 'ad-video-16x9.jpg' }, at: 3900 }] },
+      app: { page: { scroll: { by: '-70%', at: 2600, dur: 1100 } },
+             content: function (camp) { return ['head', ['lines', { n: 3 }], ['inread', { at: 900, camp: camp }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }]]; },
+             layers: [{ wire: { creative: 'floatvid', place: 'br', w: 72, h: '70u', closable: true }, camp: { creative: 'floatvid', place: 'br', w: 72, h: '70u', img: 'ad-video-16x9.jpg' }, at: 3900 }] }
+    },
+    'ribbon-player': {
+      opts: { dur: 700, enter: 'slide-down', closable: true },
+      web: { page: { scroll: { by: '-62%', at: 2600, dur: 1100 } },
+             content: function (camp) { return ['head', 'byline', ['lines', { n: 3 }], ['inread', { at: 900, camp: camp }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }]]; },
+             layers: [{ wire: { creative: 'floatvid', place: 'top', h: '56u' }, camp: { creative: 'floatvid', place: 'top', h: '56u', img: 'ad-video-16x9.jpg' }, at: 3900 }] },
+      app: { page: { scroll: { by: '-70%', at: 2600, dur: 1100 } },
+             content: function (camp) { return ['head', ['lines', { n: 3 }], ['inread', { at: 900, camp: camp }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }]]; },
+             layers: [{ wire: { creative: 'floatvid', place: 'top', h: '56u' }, camp: { creative: 'floatvid', place: 'top', h: '56u', img: 'ad-video-16x9.jpg' }, at: 3900 }] }
+    },
+    'hybrid-video': {
+      opts: { dur: 700, enter: 'slide-right', closable: true },
+      web: { page: { scroll: { by: '-62%', at: 2600, dur: 1100 } },
+             content: function (camp) { return ['head', 'byline', ['lines', { n: 3 }], ['inread', { at: 900, camp: camp }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }]]; },
+             layers: [{ wire: { creative: 'standard', place: 'br' }, camp: { place: 'br', w: 52, h: '90u', img: 'ad-dock-3x1.jpg' }, at: 3900 }] },
+      app: { page: { scroll: { by: '-70%', at: 2600, dur: 1100 } },
+             content: function (camp) { return ['head', ['lines', { n: 3 }], ['inread', { at: 900, camp: camp }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }], ['lines', { n: 6 }]]; },
+             layers: [{ wire: { creative: 'standard', place: 'br' }, camp: { place: 'br', w: 92, h: '70u', img: 'ad-dock-3x1.jpg' }, at: 3900 }] }
+    },
+    'rewarded-ad': {
+      appOnly: true,
+      opts: { dur: 700, enter: 'fade-scale' },
+      app: { content: [['playfield']], layers: [
+        { wire: { creative: 'reward', place: 'full', progress: 2500, text: 'Reward after the video' }, at: 900 },
+        { wire: { creative: 'endcard', place: 'full', cta: 'Install' }, camp: { place: 'full', img: 'ad-fullscreen-9x16.jpg' }, at: 4600, closable: true, bleed: true }
+      ] }
+    }
+  };
+
+  /* In-content video player: the ad lives inside the article, outlined in orange, and rises in once */
+  TapMindKit.blocks.inread = function (o) {
+    var img = o.camp ? '<img src="' + C + 'ad-video-16x9.jpg" alt="Headphones video ad">' : '';
+    return '<div class="tm-media tm-media--player tm-inread" style="height:112u">'.replace('112u', 'calc(112px * var(--s))') + img +
+      '<span class="tm-tag tm-inread-ad">AD</span><span class="tm-glyph-play"></span><span class="tm-vbar"><i></i></span></div>';
+  };
+
+  /* Floating video player: a small player with its own controls, pinned to the corner */
+  TapMindKit.creatives.floatvid = function (L) {
+    var src = L.campaign && L.campaign.src;
+    return '<div class="tm-fv">' + (src ? '<img src="' + src + '" alt="Floating video ad">' : '') +
+      '<span class="tm-tag tm-tag--ad">Ad</span><span class="tm-glyph-play"></span><span class="tm-vbar"><i></i></span></div>';
+  };
+
+  var F = FORMATS[new URLSearchParams(location.search).get('format')] || FORMATS.interstitial;
+
+  function pick(a, b, c, d) { return a != null ? a : (b != null ? b : (c != null ? c : d)); }
+
+  function buildLayers(scene, mode) {
+    return scene.layers.map(function (L) {
+      var o = {}, k, camp = mode === 'campaign' && L.camp;
+      for (k in L.wire) o[k] = L.wire[k];
+      o.at = pick(L.at, F.opts && F.opts.at, DEFAULT.at);
+      o.dur = pick(L.dur, F.opts && F.opts.dur, DEFAULT.dur);
+      o.enter = pick(L.enter, F.opts && F.opts.enter, DEFAULT.enter);
+      o.closable = pick(L.closable, L.wire.closable, F.opts && F.opts.closable, DEFAULT.closable);
+      o.closeLabel = 'Close ad';
+      if (camp) {
+        o.creative = 'campaign';
+        for (k in L.camp) if (k !== 'img') o[k] = L.camp[k];
+        o.campaign = { src: C + L.camp.img, alt: 'Headphones ad', headline: 'Hear more. Live more.', cta: 'Shop now' };
+      }
+      return o;
+    });
+  }
+
+  function spec(frame, scene, mode) {
+    var s = { frame: frame, label: 'Ad format mockup', content: typeof scene.content === 'function' ? scene.content(mode === 'campaign') : scene.content, layers: buildLayers(scene, mode), controls: { replay: true } };
+    if (scene.page) s.page = scene.page;
+    if (frame === 'app') s.maxWidth = '100%';
+    return s;
+  }
+
+  function render(mode) {
+    var camp = mode === 'campaign';
+    var row = document.getElementById('row'), web = document.getElementById('web'), app = document.getElementById('app');
+    var bleed = camp && (F.app.bleed || F.app.layers.some(function (L) { return L.bleed; }));
+    var bleedWeb = camp && !F.appOnly && F.web.bleed;
+    row.className = 'row' + (F.appOnly ? ' app-only' : '') + (bleed ? ' bleed' : '') + (bleedWeb ? ' bleed-web' : '') + (!F.appOnly && F.web.sidebar ? ' sidebar' : '');
+    web.innerHTML = ''; app.innerHTML = '';
+    if (!F.appOnly) TapMindKit.build(web, spec('web', F.web, mode));
+    TapMindKit.build(app, spec('app', F.app, mode));
+  }
+
+  var btns = document.querySelectorAll('.tabs button');
+  Array.prototype.forEach.call(btns, function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(btns, function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      render(b.getAttribute('data-mode'));
+    });
+  });
+  render('wireframe');
+</script>
+</body>
+</html>

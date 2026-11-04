@@ -94,17 +94,8 @@ function App() {
   const formatRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const REWARDED_FORMAT_ID = 'rewarded-ad';
 
-  const dismissDesktopNote = () => {
-    setShowDesktopOnlyModal(false);
-    try {
-      sessionStorage.setItem('tm-desktop-note', '1');
-    } catch {
-      /* storage can be blocked; the note then shows again on reload */
-    }
-  };
-
-  // Add this new state
-  const [isDesktop, setIsDesktop] = useState<boolean>(true);
+  // The site is built for desktop for now: below 1024px a notice covers the page (see the alertdialog near the end)
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => typeof window === 'undefined' || window.innerWidth >= 1024);
   // Update existing mobile check useEffect to also set isDesktop
   useEffect(() => {
     const checkSize = () => {
@@ -114,12 +105,6 @@ function App() {
     };
 
     checkSize(); // Initial check
-    // The site is built for desktop for now: tell phone and tablet visitors once per session
-    try {
-      if (window.innerWidth < 1024 && !sessionStorage.getItem('tm-desktop-note')) setShowDesktopOnlyModal(true);
-    } catch {
-      if (window.innerWidth < 1024) setShowDesktopOnlyModal(true);
-    }
     window.addEventListener('resize', checkSize);
     return () => window.removeEventListener('resize', checkSize);
   }, []);
@@ -1484,18 +1469,16 @@ function App() {
         <PreviewModal format={selectedFormat} onClose={() => setSelectedFormat(null)} autoLaunch />
       )}
 
-      {showDesktopOnlyModal && !isDesktop && (
+      {!isDesktop && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          role="dialog"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          role="alertdialog"
           aria-modal="true"
           aria-label="Desktop view"
-          onClick={dismissDesktopNote}
         >
           <div
             className="bg-white shadow-2xl max-w-md w-full p-8 text-center"
             style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="inline-flex items-center justify-center w-16 h-16 mb-5" style={{ backgroundColor: '#fff4ed' }}>
               <Monitor className="w-8 h-8" style={{ color: '#FF7E01' }} />
@@ -1505,18 +1488,10 @@ function App() {
               Best viewed on desktop
             </h2>
 
-            <p className="leading-relaxed mb-7" style={{ color: '#666661' }}>
+            <p className="leading-relaxed" style={{ color: '#666661' }}>
               This experience is designed for the desktop view, not for mobile. Please open it on a laptop or desktop
               for the full experience.
             </p>
-
-            <button
-              onClick={dismissDesktopNote}
-              className="!px-8 !py-3 font-semibold"
-              style={{ backgroundColor: '#FF7E01', color: '#ffffff' }}
-            >
-              Got it
-            </button>
           </div>
         </div>
       )}

@@ -156,6 +156,14 @@
     .solo .phone { height: min(340px, 90cqw * 1.9); width: calc(min(340px, 90cqw * 1.9) / 2); }
   }
 
+  /* ?view=web|mobile (small screens): show one mockup at a time, picked with the tabs on the page */
+  body.v-web .col--mobile { display: none; }
+  body.v-web .col--desktop { flex: none; width: 100%; }
+  body.v-mobile .col--desktop { display: none; }
+  body.v-mobile .stage { justify-content: center; }
+  body.v-mobile .wrap { --H: clamp(400px, 135cqw, 580px); }
+  body.v-mobile .phone { height: var(--H); width: calc(var(--H) / 2); }
+
   /* ?card=1: just the laptop and phone, no captions or spec strip, driven by the carousel on the home page */
   body.card { padding: 6px; justify-content: center; }
   body.card .wrap { max-width: none; width: 100%; --H: max(240px, calc(100vh - 20px)); }
@@ -327,6 +335,10 @@
     }, 450);
   }, cfg.loop);
   if (location.search.indexOf('wide=1') !== -1) document.body.classList.add('wide');
+  (function () {
+    var m = /[?&]view=(web|mobile)/.exec(location.search);
+    if (m && !document.getElementById('wrap').classList.contains('solo')) document.body.classList.add('v-' + m[1]);
+  })();
 
   /* Tell the page that embeds us how tall our content is, so it can size the frame without a gap */
   (function () {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PreviewModal } from './components/PreviewModal';
 import { FormatCarousel } from './components/FormatCarousel';
+import { FormatDial } from './components/FormatDial';
 import MacbookMockup from './components/MacbookMockup';
 import IphoneMockup from './components/IphoneMockup';
 import TabletMockup from './components/tabletMockup';
@@ -77,12 +78,30 @@ function App() {
   const introRef = useRef<HTMLDivElement>(null);
   const browseRef = useRef<HTMLDivElement>(null);
   const [introTab, setIntroTab] = useState<'creative' | 'format'>('creative');
+  // Small screens show one mockup at a time: Web or Mobile, chosen per format
+  const [mockupView, setMockupView] = useState<Record<string, 'web' | 'mobile'>>({});
+  const [smallScreen, setSmallScreen] = useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 1024);
+  useEffect(() => {
+    const onResize = () => setSmallScreen(window.innerWidth < 1024);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const [activeEnv, setActiveEnv] = useState<'video' | 'display' | 'app'>('video');
   const [exploreTab, setExploreTab] = useState<string>('all');
+  const [dialOpen, setDialOpen] = useState(false);
   const [exploreKey, setExploreKey] = useState<string | null>(null);
   const [replayKey, setReplayKey] = useState(0);
   const formatRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const REWARDED_FORMAT_ID = 'rewarded-ad';
+
+  const dismissDesktopNote = () => {
+    setShowDesktopOnlyModal(false);
+    try {
+      sessionStorage.setItem('tm-desktop-note', '1');
+    } catch {
+      /* storage can be blocked; the note then shows again on reload */
+    }
+  };
 
   // Add this new state
   const [isDesktop, setIsDesktop] = useState<boolean>(true);
@@ -95,6 +114,12 @@ function App() {
     };
 
     checkSize(); // Initial check
+    // The site is built for desktop for now: tell phone and tablet visitors once per session
+    try {
+      if (window.innerWidth < 1024 && !sessionStorage.getItem('tm-desktop-note')) setShowDesktopOnlyModal(true);
+    } catch {
+      if (window.innerWidth < 1024) setShowDesktopOnlyModal(true);
+    }
     window.addEventListener('resize', checkSize);
     return () => window.removeEventListener('resize', checkSize);
   }, []);
@@ -978,10 +1003,12 @@ function App() {
           const selected = list.find((e) => e.key === exploreKey) || list[0];
           const selectedFormat = selected ? allFormats.find((f) => f.id === selected.id) : undefined;
           const hasMockup = selected ? MOCKUP_FORMATS.includes(selected.id) : false;
+          const exView = mockupView['explore'] ?? 'web';
+          const viewQuery = smallScreen ? `view=${exView}` : '';
           const src = selected
             ? selected.id === 'interstitial'
-              ? '/interstitial-design.html'
-              : `/format-design.html?format=${selected.id}`
+              ? `/interstitial-design.html${viewQuery ? '?' + viewQuery : ''}`
+              : `/format-design.html?format=${selected.id}${viewQuery ? '&' + viewQuery : ''}`
             : '';
           const devices = selected?.id === 'rewarded-ad' ? 'Mobile' : 'Desktop · Mobile';
 
@@ -1066,8 +1093,49 @@ function App() {
                 </div>
               ) : (
                 <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_460px] gap-5">
+                  {/* Small screens: the current format and a button that opens the semicircle picker */}
+                  <div className="lg:hidden flex items-center gap-3 border border-[#e4e0da] bg-white p-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-bold tracking-[0.12em]" style={{ color: '#8a8780' }}>AD FORMAT</div>
+                      <div className="mt-0.5 text-[15px] font-bold truncate" style={{ color: '#0b0b0b' }}>{selected.name}</div>
+                    </div>
+                    <button
+                      onClick={() => setDialOpen(true)}
+                      className="flex-none inline-flex items-center gap-2 !px-4 !py-2.5 text-xs font-semibold"
+                      style={{ backgroundColor: '#FF7E01', color: '#ffffff' }}
+                    >
+                      Change format
+                    </button>
+                  </div>
+                  <FormatDial
+                    open={dialOpen}
+                    items={list.map((e) => ({ key: e.key, name: e.name, desc: e.desc, flagship: e.flagship }))}
+                    selectedKey={selected.key}
+                    onSelect={(k) => setExploreKey(k)}
+                    onClose={() => setDialOpen(false)}
+                  />
+
                   {/* Preview */}
                   <div className="min-w-0 border border-[#e4e0da] bg-[#f5f4f1] flex flex-col">
+                    {hasMockup && (
+                      <div className="lg:hidden flex w-full justify-center pt-3" role="tablist" aria-label="Preview device">
+                        {(['web', 'mobile'] as const).map((v) => {
+                          const on = exView === v;
+                          return (
+                            <button
+                              key={v}
+                              role="tab"
+                              aria-selected={on}
+                              onClick={() => setMockupView((m) => ({ ...m, explore: v }))}
+                              className="!px-6 !py-2 text-sm font-semibold transition-colors"
+                              style={{ backgroundColor: on ? '#FF7E01' : '#ffffff', color: on ? '#ffffff' : '#0b0b0b', border: '1px solid ' + (on ? '#FF7E01' : '#e4e0da') }}
+                            >
+                              {v === 'web' ? 'Web' : 'Mobile'}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                     <div className="flex-1 min-h-[460px] lg:min-h-[540px]">
                       {hasMockup ? (
                         <MockupFrame
@@ -1104,7 +1172,7 @@ function App() {
                   </div>
 
                   {/* Format list */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 content-start">
+                  <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 gap-2 content-start">
                     {list.map((e) => {
                       const on = e.key === selected.key;
                       return (
@@ -1208,10 +1276,30 @@ function App() {
                       <div className="relative overflow-hidden transition-all duration-500 ease-in-out">
                         {(expandedPreview === format.id || MOCKUP_FORMATS.includes(format.id)) && (
                           <div className="flex flex-col items-center justify-center min-h-[350px] sm:min-h-[450px] md:min-h-[550px] animate-fadeIn">
+                            {MOCKUP_FORMATS.includes(format.id) && (
+                              <div className="lg:hidden flex w-full justify-center pb-3" role="tablist" aria-label="Preview device">
+                                {(['web', 'mobile'] as const).map((v) => {
+                                  const on = (mockupView[format.id] ?? 'web') === v;
+                                  return (
+                                    <button
+                                      key={v}
+                                      role="tab"
+                                      aria-selected={on}
+                                      onClick={() => setMockupView((m) => ({ ...m, [format.id]: v }))}
+                                      className="!px-6 !py-2 text-sm font-semibold transition-colors"
+                                      style={{ backgroundColor: on ? '#FF7E01' : '#ffffff', color: on ? '#ffffff' : '#0b0b0b', border: '1px solid ' + (on ? '#FF7E01' : '#e4e0da') }}
+                                    >
+                                      {v === 'web' ? 'Web' : 'Mobile'}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
                             <div className="flex items-center justify-center flex-1 w-full relative">
                               {MOCKUP_FORMATS.includes(format.id) ? (
                                 <MockupFrame
-                                  src={format.id === 'interstitial' ? '/interstitial-design.html?wide=1' : `/format-design.html?format=${format.id}&wide=1`}
+                                  key={smallScreen ? mockupView[format.id] ?? 'web' : 'both'}
+                                  src={(format.id === 'interstitial' ? '/interstitial-design.html?wide=1' : `/format-design.html?format=${format.id}&wide=1`) + (smallScreen ? `&view=${mockupView[format.id] ?? 'web'}` : '')}
                                   title={`${format.name} mockup`}
                                   autoBelow={1024}
                                   className={`w-full border-0 bg-transparent ${MOCKUP_FORMATS.includes(format.id) ? 'h-[760px] lg:h-[calc(100vh-18rem)] lg:min-h-[460px]' : 'h-[860px] sm:h-[640px] md:h-[720px]'}`}
@@ -1398,29 +1486,34 @@ function App() {
 
       {showDesktopOnlyModal && !isDesktop && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={() => setShowDesktopOnlyModal(false)}
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Desktop view"
+          onClick={dismissDesktopNote}
         >
           <div
-            className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center"
+            className="bg-white shadow-2xl max-w-md w-full p-8 text-center"
+            style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-2xl mb-6">
-              <Monitor className="w-10 h-10 text-blue-600" />
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-5" style={{ backgroundColor: '#fff4ed' }}>
+              <Monitor className="w-8 h-8" style={{ color: '#FF7E01' }} />
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Live Preview Needs a Larger Screen
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#0b0b0b' }}>
+              Best viewed on desktop
             </h2>
 
-            <p className="text-gray-600 leading-relaxed mb-8">
-              The animated mockups on this page work on your phone. The full live preview is best
-              experienced on a desktop or tablet in landscape.
+            <p className="leading-relaxed mb-7" style={{ color: '#666661' }}>
+              This experience is designed for the desktop view, not for mobile. Please open it on a laptop or desktop
+              for the full experience.
             </p>
 
             <button
-              onClick={() => setShowDesktopOnlyModal(false)}
-              className="!px-6 !py-3 !bg-[#0b0b0b] !text-white font-semibold"
+              onClick={dismissDesktopNote}
+              className="!px-8 !py-3 font-semibold"
+              style={{ backgroundColor: '#FF7E01', color: '#ffffff' }}
             >
               Got it
             </button>
